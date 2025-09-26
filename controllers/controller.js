@@ -27,8 +27,9 @@ export class UserGetController {
   };
 
   getForgotPassword = (req, res) => {
-    res.render("forgot-password", { message: "" });
-  };
+  res.render("forgot-password", { message: "", siteKey: process.env.RECAPTCHA_SITE_KEY });
+};
+
 
   getChangePassword = (req, res) => {
   const email = req.session.userEmail;
@@ -134,42 +135,73 @@ export class UserPostController {
   };
 
   // 🔹 Forgot password
-  forgotPassword = async (req, res) => {
-    const { email } = req.body;
-    try {
-      const existingUser = await User.findOne({ email });
-      if (!existingUser) {
-        return res.status(404).render("forgot-password", { message: "User doesn't exist" });
-      }
+forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  const recaptcha = req.body["g-recaptcha-response"];
 
-      const newPassword = Math.random().toString(36).slice(-8);
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
+  if (!recaptcha) {
+    return res.status(400).render("forgot-password", { 
+      message: "Please select captcha", 
+      siteKey: process.env.RECAPTCHA_SITE_KEY 
+    });
+  }
 
-      try {
-        await transporter.sendMail({
-          from: process.env.EMAIL,
-          to: email,
-          subject: "Password Reset",
-          text: `Your new password is: ${newPassword}`,
-        });
-      } catch (error) {
-        console.log(error);
-        return res.status(404).render("forgot-password", { message: "Not valid Email " + error });
-      }
+  const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+  const url = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptcha}`;
 
-      existingUser.password = hashedPassword;
-      await existingUser.save();
+  try {
+    const googleResponse = await fetch(url, { method: "POST" });
+    const data = await googleResponse.json();
 
-      res.status(201).render("signin", { 
-        message: "New Password sent to your email", 
+    if (!data.success) {
+      return res.status(400).render("forgot-password", { 
+        message: "Captcha verification failed", 
         siteKey: process.env.RECAPTCHA_SITE_KEY 
       });
-    } catch (error) {
-      res.status(500).render("forgot-password", { message: error.message });
     }
-  };
 
-  // 🔹 Change password
+    // Nếu captcha OK → check user
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(404).render("forgot-password", { 
+        message: "User doesn't exist", 
+        siteKey: process.env.RECAPTCHA_SITE_KEY 
+      });
+    }
+
+    const newPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    try {
+      await transporter.sendMail({
+        from: process.env.EMAIL_FROM,   // ✅ dùng Mailtrap config
+        to: email,
+        subject: "Password Reset",
+        text: `Your new password is: ${newPassword}`,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).render("forgot-password", { 
+        message: "Email sending failed: " + error.message, 
+        siteKey: process.env.RECAPTCHA_SITE_KEY 
+      });
+    }
+
+    existingUser.password = hashedPassword;
+    await existingUser.save();
+
+    res.status(201).render("signin", { 
+      message: "✅ New Password sent to your email (check Mailtrap inbox)", 
+      siteKey: process.env.RECAPTCHA_SITE_KEY 
+    });
+  } catch (error) {
+    res.status(500).render("forgot-password", { 
+      message: error.message, 
+      siteKey: process.env.RECAPTCHA_SITE_KEY 
+    });
+  }
+};
+
   // change password
 changePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;
