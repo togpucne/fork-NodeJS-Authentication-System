@@ -27,6 +27,21 @@ app.use(
 //MIDDLEWARE
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+// Captcha
+app.use((req, res, next) => {
+  res.locals.RECAPTCHA_SITE_KEY = process.env.RECAPTCHA_SITE_KEY;
+  next();
+});
+
+// Custom Middleware: Thêm MSSV + Họ tên vào res.locals
+app.use((req, res, next) => {
+  res.locals.student = {
+    id: "22655111",
+    name: "Nguyen Trong Phuc"
+  };
+  next();
+});
+
 
 //Passport
 app.use(passport.initialize());
