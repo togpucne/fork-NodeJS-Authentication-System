@@ -9,7 +9,8 @@
         <input type="email" name="email" placeholder="Email" autocomplete="off" required><br><br>
         <input type="password" name="password" placeholder="Password" autocomplete="off" required><br><br>
         <input type="password" name="cpassword" placeholder="Confirm Password" autocomplete="off" required><br><br>
-        <div class="g-recaptcha" data-sitekey="6LflLRIqAAAAAHrbmeUx3WThRxp7On8iAQQOIQWH"></div>
+<!-- Google reCAPTCHA -->
+    <div class="g-recaptcha" data-sitekey="<%= siteKey %>"></div>
         <button type="submit" class="btn btn-light"><strong>Sign Up</strong></button>
     </form>
     <br>
@@ -20,4 +21,6 @@
     <!-- Link to sign-in page -->
 
 </section>
+
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
