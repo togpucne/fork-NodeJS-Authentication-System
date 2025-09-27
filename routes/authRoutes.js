@@ -1,26 +1,50 @@
-import passport from 'passport';  // Importing passport for authentication
-import express from 'express';    // Importing express for the web framework
-import { googleSignInController } from '../controllers/authController.js';  // Importing the Google sign-in controller
-import dotenv from 'dotenv';      // Importing dotenv to load environment variables
+import express from "express";
+import passport from "passport";  // Passport middleware
+import dotenv from "dotenv";      // Load env
+import { googleSignInController } from "../controllers/authController.js"; 
 
-dotenv.config();  // Loading environment variables from .env file
+dotenv.config();
 
-const authRouter = express.Router(); // Creating an instance of express Router for handling authentication routes
-const googleSignIn = new googleSignInController(); // Creating an instance of GoogleSignInController
+const authRouter = express.Router();
+const googleSignIn = new googleSignInController();
 
-// OAuth2 login with Google
-authRouter.get("/google", passport.authenticate('google', { scope: ['email', 'profile'] }));
+// ========== GOOGLE OAUTH ROUTES ==========
 
-// Google OAuth2 callback
-authRouter.get("/google/callback",
-    passport.authenticate("google", {
-        successRedirect: process.env.CLIENT_URL,
-        failureRedirect: "/login/failed"
-    })
+// 👉 Khi user bấm "Sign In with Google"
+authRouter.get(
+  "/google",
+  passport.authenticate("google", { scope: ["email", "profile"] })
 );
 
-// Routes for handling login success and failure
+// 👉 Google gọi lại callback sau khi xác thực
+authRouter.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/auth/login/failed",
+  }),
+  (req, res) => {
+    if (req.user && req.user.emails && req.user.emails.length > 0) {
+      req.session.userEmail = req.user.emails[0].value;
+    }
+    // 👉 Redirect thẳng về trang homepage
+    res.redirect("/user/homepage");
+  }
+);
+
+
+// ========== LOGIN RESULT ROUTES ==========
 authRouter.get("/login/success", googleSignIn.signInSuccess);
 authRouter.get("/login/failed", googleSignIn.signInFailed);
 
-export default authRouter; // Exporting the Auth Router
+// ========== LOGOUT ==========
+authRouter.get("/logout", (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ success: false, message: "Logout error", error: err });
+    }
+    req.session.destroy();
+    res.redirect("/user/signin");
+  });
+});
+
+export default authRouter;
