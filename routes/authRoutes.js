@@ -1,12 +1,12 @@
 import express from "express";
-import passport from "passport";  // Passport middleware
-import dotenv from "dotenv";      // Load env
-import { googleSignInController } from "../controllers/authController.js"; 
+import passport from "passport";
+import dotenv from "dotenv";
+import { UserPostController } from "../controllers/controller.js"; // ✅ dùng chung controller chính
 
 dotenv.config();
 
 const authRouter = express.Router();
-const googleSignIn = new googleSignInController();
+const userPostCtrl = new UserPostController();
 
 // ========== GOOGLE OAUTH ROUTES ==========
 
@@ -22,25 +22,20 @@ authRouter.get(
   passport.authenticate("google", {
     failureRedirect: "/auth/login/failed",
   }),
-  (req, res) => {
-    if (req.user && req.user.emails && req.user.emails.length > 0) {
-      req.session.userEmail = req.user.emails[0].value;
-    }
-    // 👉 Redirect thẳng về trang homepage
-    res.redirect("/user/homepage");
-  }
+  userPostCtrl.googleSignInSuccess  // ✅ lưu user vào MongoDB + redirect homepage
 );
 
-
 // ========== LOGIN RESULT ROUTES ==========
-authRouter.get("/login/success", googleSignIn.signInSuccess);
-authRouter.get("/login/failed", googleSignIn.signInFailed);
+authRouter.get("/login/success", userPostCtrl.googleSignInSuccess);
+authRouter.get("/login/failed", userPostCtrl.googleSignInFailed);
 
 // ========== LOGOUT ==========
 authRouter.get("/logout", (req, res) => {
   req.logout((err) => {
     if (err) {
-      return res.status(500).json({ success: false, message: "Logout error", error: err });
+      return res
+        .status(500)
+        .json({ success: false, message: "Logout error", error: err });
     }
     req.session.destroy();
     res.redirect("/user/signin");

@@ -28,10 +28,24 @@ Chọn Node.js
 
 ![1758910647833](image/READMEcopy/1758910647833.png)
 
+**3. Cấu hình Google OAuth:** 
 
-**3.Tạo file .env**
 
-![1758911195065](image/READMEcopy/1758911195065.png)
+![1758964923515](image/READMEcopy/1758964923515.png)
+
+![1758964930325](image/READMEcopy/1758964930325.png)
+
+![1758964951368](image/READMEcopy/1758964951368.png)
+
+![1758964975628](image/READMEcopy/1758964975628.png)
+
+![1758964988918](image/READMEcopy/1758964988918.png)
+
+![1758965000647](image/READMEcopy/1758965000647.png)
+
+4. Tạo file .env:
+
+![1758964740380](image/READMEcopy/1758964740380.png)![1758964740380](image/READMEcopy/1758964740380.png)
 
 #### b. Hiển thị **mã số sinh viên** và **họ tên đầy đủ** của bạn trên tất cả các trang.
 
@@ -88,12 +102,9 @@ Chọn Node.js
 
    ![1758911065448](image/READMEcopy/1758911065448.png)
 
-
 Nhập lại Email và Mật khẩu mới
 
 ![1758911123321](image/READMEcopy/1758911123321.png)
-
-
 
 6. **Trang Change Password (Đổi mật khẩu)**
 
@@ -103,15 +114,19 @@ Nhập lại Email và Mật khẩu mới
 
   ![1758909323899](image/READMEcopy/1758909323899.png)
 
-
 **7. Login bằng Google (OAuth2)**
 
 * Truy cập: `http://localhost:3000/auth/google`
-* Chọn tài khoản Google → thành công → redirect về `CLIENT_URL` (ví dụ `/auth/login/success`).
-* Nếu từ chối → redirect về `/login/failed`.
+  B1. Sign in with Google
 
+  ![1758965042320](image/READMEcopy/1758965042320.png)
+* B2. Chọn tài khoản:
 
+![1758965252697](image/READMEcopy/1758965252697.png)
 
+* B3. Chọn tiếp tục
+
+![1758965092286](image/READMEcopy/1758965092286.png)
 
 
 #### d. Chụp màn hình toàn bộ kết quả kiểm thử, đặt tên file theo chức năng kiểm thử.
@@ -162,6 +177,17 @@ Database
 
 ![1758911142625](image/READMEcopy/1758911142625.png)
 
+6. Sign In With Google
+
+   ![1758965310416](image/READMEcopy/1758965310416.png)
+
+ Đăng nhập thành công. Hiển thị Homepage
+
+![1758965129698](image/READMEcopy/1758965129698.png)
+
+Database:
+
+![1758965184114](image/READMEcopy/1758965184114.png)
 
 Ví dụ:
 

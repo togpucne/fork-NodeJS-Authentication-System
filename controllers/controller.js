@@ -133,6 +133,40 @@
         return res.status(500).render("signin", { message: "Internal server error", siteKey: process.env.RECAPTCHA_SITE_KEY });
       }
     };
+     // 🔹 Sign in with Google
+  googleSignInSuccess = async (req, res) => {
+    try {
+      if (!req.user || !req.user._json) {
+        return res.status(403).json({ error: true, message: "Not Authorized" });
+      }
+
+      const { email, name, sub } = req.user._json;
+      if (!email) {
+        return res.status(403).json({ error: true, message: "Email not found in Google profile" });
+      }
+
+      // check DB
+      let user = await User.findOne({ email });
+      if (!user) {
+        const hashedPassword = await bcrypt.hash(sub, 10); // dùng Google ID làm password hash
+        user = new User({ username: name, email, password: hashedPassword });
+        await user.save();
+      }
+
+      req.session.userEmail = email;
+      req.session.username = user.username;
+
+      return res.redirect("/user/homepage");
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+      res.status(500).json({ error: true, message: "Internal Server Error" });
+    }
+  };
+
+  googleSignInFailed = (req, res) => {
+    res.status(401).json({ error: true, message: "Google login failed" });
+  };
+
 
     // 🔹 Forgot password
   forgotPassword = async (req, res) => {

@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import User from "../models/userModel.js"; // Import User model
 
 // Controller class for handling Google Sign In
@@ -19,11 +20,11 @@ export class googleSignInController {
       let user = await User.findOne({ email });
       if (!user) {
         // Nếu chưa có → tạo user mới
+        const hashedPassword = await bcrypt.hash(sub, 10); // hash Google ID
         user = new User({
           username: name,
           email: email,
-          // ⚠️ password gán tạm bằng sub (Google ID), chỉ để có field password
-          password: sub,
+          password: hashedPassword, // ⚡ luôn hash trước khi lưu
         });
         await user.save();
       }
@@ -33,7 +34,7 @@ export class googleSignInController {
 
       // 👉 Render homepage
       return res.status(200).render("homepage", {
-        message: `Welcome, ${name}`,
+        message: `Welcome, ${user.username}`,
         siteKey: process.env.RECAPTCHA_SITE_KEY,
       });
     } catch (error) {
